@@ -1,11 +1,37 @@
 
 
-
+import numpy as np 
+import pandas as pd
+import plotly.express as px 
+import plotly.graph_objects as go
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
 
 
 
 
 ### statsmodels Functions
+
+def smf_results_to_df(results):
+    # Function takes the result of an statsmodel results table and transforms it into a dataframe
+    # Appropriate usage: results = smf.ols().fit()
+    p_value = results.pvalues
+    coeff = results.params
+    std_err = results.bse
+    conf_lb = results.conf_int()[0]
+    conf_ub = results.conf_int()[1]
+
+    results_df = pd.DataFrame({"p_value":p_value,
+                               "coeff":coeff,
+                               "std_err":std_err,
+                               "conf_lb":conf_lb,
+                               "conf_ub":conf_ub
+                                })
+
+    #Reordering...
+    results_df = results_df[["coeff","std_err","p_value","conf_lb","conf_ub"]]
+    return results_df
+
 
 def run_quantile_regressions(df, formula, q, varname):
     # Function runs multiple quantile regressions and returns a dataframe with the results for a selected vareter of interest
@@ -30,19 +56,6 @@ def run_quantile_regressions(df, formula, q, varname):
 
 
 ### Plotly Functions
-
-def plotly_renderer(rend = 'vscode')
-        # Function sets the plotly image renderer for a session, useful if you want notebook results to display in github
-            # for static images: 'svg' or 'png' (visible in github) 
-            # for interactive images:'vscode' (not viisble in github)
-    if plotly_renderer in ['svg','png']:
-        print("You've chosen static images for plotly data visualizations, these should display in github")
-    elif plotly_renderer == 'vscode':
-        print("You've chosen vscode for the ploltly renderer, these images will not display in github but will be animated in a VScode notebook environment")
-    else:
-        print("please choose an appropriate plotly image renderer")
-    return(rend)
-
 
 def dual_yaxis_lineplot(x, y1, y2,plot_title, x_title, y1_title, y2_title):
     # Function will return a dual y axis lineplot 
@@ -69,3 +82,25 @@ def dual_yaxis_lineplot(x, y1, y2,plot_title, x_title, y1_title, y2_title):
         .update_yaxes(title_text= y2_title, secondary_y= True)
             )
     return(fig)
+
+
+### Federal Reserve Economic Data (FRED) Functions
+
+def get_fred_data(fred_code, metric_name, geo):
+    # Function to pull in a time series from FRED and convert to a tidy dataframe 
+    # Arguments:
+        # fred_code: code of the time series, can be found on the FRED website
+        # metric_name: what you want the name of the metric to be in the resulting dataframe
+        # geo: the geographical unit the series applies to e.g. 'alabama', 'USA','world' (note: this is already in the fred_code, speciyfing only makes it explicit in the df)
+    data = fred.get_series(fred_code)
+    data = (pd.DataFrame(data)
+        .reset_index()
+        .rename(columns = {'index':'date',0:metric_name})
+        .assign(geo = geo,
+                year = lambda x: x.date.dt.year,
+                month = lambda x: x.date.dt.month)
+        .astype({'geo':'category'})
+            )    
+    data = data[['date','year','month','geo',metric_name,]]
+    return(data)
+
