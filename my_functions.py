@@ -1,13 +1,14 @@
 
-
+# Import dependencies
 import numpy as np 
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 import plotly.express as px 
 import plotly.graph_objects as go
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
-
-
+import scipy
 
 
 ### statsmodels Functions
@@ -32,7 +33,6 @@ def smf_results_to_df(results):
     results_df = results_df[["coeff","std_err","p_value","conf_lb","conf_ub"]]
     return results_df
 
-
 def run_quantile_regressions(df, formula, q, varname):
     # Function runs multiple quantile regressions and returns a dataframe with the results for a selected vareter of interest
     # Arguments:
@@ -52,7 +52,6 @@ def run_quantile_regressions(df, formula, q, varname):
                              'ci_upper': [qreg.conf_int()[1][varname]]})
         all_qr_results = pd.concat([all_qr_results, temp]).reset_index(drop=True)
     return(all_qr_results)
-
 
 
 ### Plotly Functions
