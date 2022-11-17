@@ -228,7 +228,3 @@ fig = sm.qqplot(train.model1_resid, line = 's')
 plt.show()
 
 
-
-
-
-# %%
