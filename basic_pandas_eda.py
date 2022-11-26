@@ -19,7 +19,6 @@ import scipy
 
 # %%
 tips = sns.load_dataset('tips')
-titanic = sns.load_dataset('titanic')
 flights = sns.load_dataset('flights')
 
 #%% [markdown]
@@ -227,4 +226,102 @@ sns.kdeplot(train.model1_resid)
 fig = sm.qqplot(train.model1_resid, line = 's')
 plt.show()
 
+#%%
 
+# Algorithms
+from sklearn import linear_model
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import Perceptron
+from sklearn.linear_model import SGDClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC, LinearSVC
+from sklearn.naive_bayes import GaussianNB
+
+
+# %%
+
+titanic = sns.load_dataset('titanic')
+print(titanic.info())
+titanic.head()
+
+#%%
+
+### this reduces the memory usage by more than half
+titanic = (titanic.drop(['pclass','embarked','who','deck','alive'], axis = 1)
+                        .assign(age = titanic['age'].fillna(titanic['age'].median()),
+                                adult_male = titanic['adult_male']*1,
+                                alone = titanic['alone']*1
+                                )
+                        .astype({
+                                'sex':'category',
+                                'age':'float32',
+                                'sibsp':'int32',
+                                'parch':'int32',
+                                'fare':'float32',
+                                'embark_town':'category'
+                                })
+                        .dropna(axis = 0, how = 'any')
+                )
+
+print(titanic.info())
+
+
+#%%
+titanic_prepped = pd.get_dummies(titanic)
+
+test, train = train_test_split(titanic_prepped, train_size = .75, random_state = 456)
+
+train.head()
+
+#%%
+
+X_train =  train.drop('survived', axis = 1)
+Y_train = train['survived']
+X_test = test.drop('survived', axis = 1)
+
+#%%
+
+
+### Decision Tree
+decision_tree = DecisionTreeClassifier() 
+decision_tree.fit(X_train, Y_train)  
+Y_pred = decision_tree.predict(X_test)  
+acc_decision_tree = round(decision_tree.score(X_train, Y_train) * 100, 2)
+
+#%%
+
+### Random Forest
+random_forest = RandomForestClassifier(n_estimators=100)
+random_forest.fit(X_train, Y_train)
+
+Y_prediction = random_forest.predict(X_test)
+
+random_forest.score(X_train, Y_train)
+acc_random_forest = round(random_forest.score(X_train, Y_train) * 100, 2)
+
+importances = pd.DataFrame({'feature':X_train.columns,'importance':np.round(random_forest.feature_importances_,3)})
+importances = importances.sort_values('importance',ascending=False).set_index('feature')
+importances.head(15)
+
+#%%
+
+# KNN 
+knn = KNeighborsClassifier(n_neighbors = 3)
+knn.fit(X_train, Y_train)  
+Y_pred = knn.predict(X_test)  
+acc_knn = round(knn.score(X_train, Y_train) * 100, 2)
+
+
+
+
+
+
+
+
+
+
+
+
+# %%
