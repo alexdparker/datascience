@@ -82,6 +82,33 @@ def dual_yaxis_lineplot(x, y1, y2,plot_title, x_title, y1_title, y2_title):
             )
     return(fig)
 
+def quad_yaxis_plot(x, y1, y2, y3, y4,plot_title, x_title, y1_title, y2_title, y3_title, y4_title):
+    # Function will return a lineplot for 4 time series on 4 separate axes
+    fig = go.Figure()
+    # Add the different series to plot
+    fig.add_trace(go.Scatter(x=x,y=y1, name=y1_title))
+    fig.add_trace(go.Scatter( x=x,y=y2,name=y2_title,yaxis="y2"))
+    fig.add_trace(go.Scatter(x=x,y=y3,name=y3_title,yaxis="y3"))
+    fig.add_trace(go.Scatter(x=x,y=y4,name=y4_title,yaxis="y4"))
+
+
+    # Create axis objects
+    fig.update_layout(
+        xaxis=dict(domain=[0.2, 0.8]),
+        yaxis=dict(title=y1_title, titlefont=dict(color="#1f77b4"),tickfont=dict(color="#1f77b4")),
+        yaxis2=dict(title=y2_title,titlefont=dict(color="#ff7f0e"),tickfont=dict(color="#ff7f0e"),anchor="free",overlaying="y",side="left",position=0.1),
+        yaxis3=dict(title=y3_title,titlefont=dict(color="#d62728"),tickfont=dict(color="#d62728"),anchor="x",overlaying="y",side="right"),
+        yaxis4=dict(title=y4_title,titlefont=dict(color="#9467bd"),tickfont=dict(color="#9467bd"),anchor="free",overlaying="y",side="right",position=0.9)
+    )
+
+    # Update layout properties
+    fig.update_layout(
+        title_text=plot_title,
+        width=1200,
+    )
+
+    return(fig)
+
 
 ### Federal Reserve Economic Data (FRED) Functions
 
