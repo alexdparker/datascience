@@ -313,15 +313,9 @@ knn.fit(X_train, Y_train)
 Y_pred = knn.predict(X_test)  
 acc_knn = round(knn.score(X_train, Y_train) * 100, 2)
 
+#%% 
 
+from sklearn.datasets import load_iris
 
-
-
-
-
-
-
-
-
-
+iris = load_iris(as_frame=True)
 # %%
