@@ -9,6 +9,59 @@ import plotly.graph_objects as go
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 import scipy
+import sklearn
+
+
+### Sklearn Functions
+
+def splitter(df, target, train_size, random_state):
+    # Returns versions of test and train data with and without the target for simple processing throughout the notebook
+    # Arguments:
+        # df = dataframe with target variable attached
+        # target = name of target column
+        
+    train, test = train_test_split(df, train_size= train_size, random_state = random_state)
+
+    X_train = train.drop(target, axis = 1).copy()
+    y_train = train[target].copy()
+
+    X_test = test.drop(target, axis = 1).copy()
+    y_test = test[target].copy()
+
+    return(train, test, X_train, X_test, y_train, y_test)
+
+
+def classification_cv_metrics(model, X_train, y_train, cv, method, model_name):
+    # Function returns several important metrics for classification models for different thresholds and scrores in wide and long formats making plotting and inspection easy
+    # Arguments:
+        # model is the same thing as estimator
+        # method will likely either be 'decision_function' or 'predict_proba' depending on the estimator
+        # model_name is how the model will appear in downstream datasets of performance scores across all models
+    # Note: will require the appropriate loading of sklearn helper functions
+
+    # Obtain cross validation scores
+    y_scores = cross_val_predict(estimator = model, X = X_train, y = y_train, cv = cv, method = method)
+
+    # Depending on the estimator the scores output may be mutlidimensional, for example random forest predict_proba returns 2 probabilities for each instance
+    if y_scores.ndim > 1:
+        y_scores_mod = y_scores[:,1]
+    else:
+        y_scores_mod = y_scores
+
+    # create a dataframe for precision and recall 
+    precision, recall, threshold = precision_recall_curve(y_train, y_scores_mod)
+    pr_data = {'model':model_name, 'precision':precision[:-1], 'recall':recall[:-1], 'threshold':threshold}
+    pr_wide = pd.DataFrame(pr_data)
+    pr_long = pr_wide.melt(id_vars = ['threshold','model'])
+
+    # create dataframes for ROC curve TPR (recall, sensitivity) and FPR (Fallout, 1 - specificity)
+    fpr, tpr, threshold = roc_curve(y_train, y_scores_mod)
+    roc_data = {'model':model_name,'fpr':fpr,'tpr':tpr,'threshold':threshold}
+    roc_wide = pd.DataFrame(roc_data)
+    roc_long = roc_wide.melt(id_vars = ['threshold','model'])
+
+    return(pr_wide, pr_long, roc_wide, roc_long)
+
 
 
 ### statsmodels Functions
@@ -129,4 +182,6 @@ def get_fred_data(fred_code, metric_name, geo):
             )    
     data = data[['date','year','month','geo',metric_name,]]
     return(data)
+
+
 
